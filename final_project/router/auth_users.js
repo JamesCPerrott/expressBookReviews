@@ -52,7 +52,7 @@ regd_users.post("/login", (req,res) => {
         req.session.authorization = {
             accessToken, username
         }
-        return res.status(200).send("User successfully logged in");
+        return res.status(200).json({message: "User successfully logged in"});
     } else {
         return res.status(208).json({ message: "Invalid Login. Check username and password" });
     }
@@ -61,7 +61,7 @@ regd_users.post("/login", (req,res) => {
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
   const isbn = req.params.isbn;
-  const username = req.session.username;
+  const username = req.session.authorization['username'];
   const review = req.query.review;
   if (isValid(username)){
       for (let id in books) {
@@ -75,6 +75,29 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
   }
   return res.status(404).json({error: 'Invalid username'});
 });
+
+// Delete a book review
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+    const isbn = req.params.isbn;
+    const username = req.session.authorization['username'];
+    if (isValid(username)){
+        for (let id in books) {
+            if (books[id].isbn === isbn) {
+                if(
+                    Object.keys(books[id].reviews).length === 0
+                ) {
+                    return res.status(404).json({error: 'No reviews found'});
+                } else {
+                    delete books[id].reviews[username];
+                    return res.status(200).json({message: 'Review deleted successfully'});
+                }            
+            } else {
+                return res.status(404).json({error: 'Book not found'});
+            }
+        }
+    }
+    return res.status(404).json({error: 'Invalid username'});
+  });
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
