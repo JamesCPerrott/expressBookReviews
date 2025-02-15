@@ -61,8 +61,8 @@ regd_users.post("/login", (req,res) => {
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
   const isbn = req.params.isbn;
-  const username = req.body.username;
-  const review = req.body.review;
+  const username = req.session.username;
+  const review = req.query.review;
   if (isValid(username)){
       for (let id in books) {
           if (books[id].isbn === isbn) {
