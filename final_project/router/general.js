@@ -40,52 +40,108 @@ const doesExist = (username) => {
 
 // Get the book list available in the shop
 public_users.get('/',function (req, res) {
-    return res.send(JSON.stringify({books}, null, 4));
+    const get_books = new Promise((resolve, reject) => {
+        try {
+            resolve(books);
+        } catch (error) {
+            reject(error);
+        }
+    });
+    get_books.then((books) => {
+        return res.send(JSON.stringify({books}, null, 4));
+    }).catch((error) => {
+       return res.status(500).json({error: 'Internal server error'});
+    });
 });
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
     const isbn = req.params.isbn;
-    for (let id in books) {
-        if (books[id].isbn === isbn) {
-          let matching_isbn = books[id];
-          return res.send(JSON.stringify({matching_isbn}, null, 4));
-        } else {
-          return res.status(404).json({error: 'Book not found'});
+    let matching_isbn = {};
+    const get_isbn = new Promise((resolve, reject) => {
+        try {
+            for (let id in books) {
+                if (books[id].isbn === isbn) {
+                    matching_isbn = books[id];
+                    resolve(matching_isbn);
+                }
+            }
+            reject('Book not found');
+        } catch (error) {
+            reject(error);
         }
-    }
- });
+    });
+    get_isbn.then((matching_isbn) => {
+        return res.send(JSON.stringify({matching_isbn}, null, 4));
+    }).catch((reject) => {
+        if(reject === 'Book not found') {
+            return res.status(404).json({error: 'Book not found'});
+        } else {
+            return res.status(500).json({error: 'Internal server error'});
+        }
+    });
+});
   
 // Get book details based on author
 public_users.get('/author/:author', (req, res) => {
     const author = req.params.author;
     let books_by_author = {};
-    for (let id in books) {
-        if (books[id].author === author) {
-            books_by_author[id] = books[id];
+    const get_author = new Promise((resolve, reject) => {
+        try {
+            for (let id in books) {
+                if (books[id].author === author) {
+                    books_by_author[id] = books[id];
+                }
+            }
+            if (Object.keys(books_by_author).length > 0) {
+                resolve(books_by_author);
+            } else {
+                reject('Author not found');
+            }
+        } catch (error) {
+            reject(error);
         }
-    }
-    if (Object.keys(books_by_author).length > 0) {
+    });
+    get_author.then((books_by_author) => {
         return res.send(JSON.stringify({books_by_author}, null, 4));
-    } else {
-        return res.status(404).json({error: 'Author not found'});
-    }
+    }).catch((reject) => {
+        if (reject === 'Author not found') {
+            return res.status(404).json({error: 'Author not found'});
+        } else {
+            return res.status(500).json({error: 'Internal server error'});
+        }
+    });
 });
 
 // Get all books based on title
 public_users.get('/title/:title', (req, res) => {
     const title = req.params.title;
     let books_by_title = {};
-    for (let id in books) {
-        if (books[id].title === title) {
-            books_by_title[id] = books[id];
+    const get_title = new Promise((resolve, reject) => {
+        try {
+            for (let id in books) {
+                if (books[id].title === title) {
+                    books_by_title[id] = books[id];
+                }
+            }
+            if (Object.keys(books_by_title).length > 0) {
+                resolve(books_by_title);
+            } else {
+                reject('Book not found');
+            }
+        } catch (error) {
+            reject(error);
         }
-    }
-    if (Object.keys(books_by_title).length > 0) {
+    });
+    get_title.then((books_by_title) => {
         return res.send(JSON.stringify({books_by_title}, null, 4));
-    } else {
-        return res.status(404).json({error: 'Book not found'});
-    }
+    }).catch((reject) => {
+        if (reject === 'Book not found') {
+            return res.status(404).json({error: 'Book not found'});
+        } else {
+            return res.status(500).json({error: 'Internal server error'});
+        }
+    });
 });
 
 //  Get book review
